@@ -351,13 +351,10 @@
     .project-img {
       width: 100%;
       aspect-ratio: 16/9;
-      background: var(--light-gray);
+      background: linear-gradient(135deg, #111, #333); /* fallback bg */
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--gray);
-      font-size: 0.8rem;
-      gap: 0.5rem;
       overflow: hidden;
       position: relative;
     }
@@ -569,8 +566,10 @@
     .slides img {
       min-width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain; /* IMPORTANT */
       object-position: center;
+      background: linear-gradient(135deg, #111, #333); /* fills empty space */
+      display:block;
     }
     
     /* arrows */
@@ -1047,7 +1046,9 @@ if (slider) {
 
   function goTo(i) {
     index = (i + images.length) % images.length;
-    slides.style.transform = `translateX(-${index * 100}%)`;
+    currentTranslate = -index * slider.offsetWidth;
+    prevTranslate = currentTranslate;
+    slides.style.transform = `translateX(${currentTranslate}px)`;
     updateDots();
   }
 
@@ -1066,8 +1067,17 @@ function stopAuto(){
   }
 }
 
-  next.onclick = () => { nextSlide(); reset(); };
-  prev.onclick = () => { prevSlide(); reset(); };
+  next.addEventListener('click', (e) => {
+    e.stopPropagation();
+    nextSlide();
+    reset();
+  });
+  
+  prev.addEventListener('click', (e) => {
+    e.stopPropagation();
+    prevSlide();
+    reset();
+  });
 
   function reset(){
     stopAuto();
@@ -1075,29 +1085,76 @@ function stopAuto(){
   }
 
   // swipe
-  slides.addEventListener('mousedown', e => {
-    startX = e.clientX;
-    stopAuto();
-  });
+let isDragging = false;
+let currentTranslate = 0;
+let prevTranslate = 0;
+let animationID;
 
-  window.addEventListener('mouseup', e => {
-    let diff = e.clientX - startX;
-    if (diff > 50) prevSlide();
-    else if (diff < -50) nextSlide();
-    startAuto();
-  });
+function setSliderPosition() {
+  slides.style.transform = `translateX(${currentTranslate}px)`;
+}
 
-  slides.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX;
-    stopAuto();
-  });
+function animation() {
+  setSliderPosition();
+  if (isDragging) requestAnimationFrame(animation);
+}
 
-  slides.addEventListener('touchend', e => {
-    let diff = e.changedTouches[0].clientX - startX;
-    if (diff > 50) prevSlide();
-    else if (diff < -50) nextSlide();
-    startAuto();
-  });
+// MOUSE
+slides.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  startX = e.clientX;
+  stopAuto();
+  animationID = requestAnimationFrame(animation);
+});
+
+slides.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const currentX = e.clientX;
+  const diff = currentX - startX;
+  currentTranslate = prevTranslate + diff;
+});
+
+window.addEventListener('mouseup', (e) => {
+  if (!isDragging) return;
+  isDragging = false;
+  cancelAnimationFrame(animationID);
+
+  const movedBy = currentTranslate - prevTranslate;
+
+  if (movedBy < -100) nextSlide();
+  else if (movedBy > 100) prevSlide();
+  else goTo(index);
+
+  startAuto();
+});
+
+// TOUCH
+slides.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  startX = e.touches[0].clientX;
+  stopAuto();
+  animationID = requestAnimationFrame(animation);
+});
+
+slides.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  const currentX = e.touches[0].clientX;
+  const diff = currentX - startX;
+  currentTranslate = prevTranslate + diff;
+});
+
+slides.addEventListener('touchend', () => {
+  isDragging = false;
+  cancelAnimationFrame(animationID);
+
+  const movedBy = currentTranslate - prevTranslate;
+
+  if (movedBy < -100) nextSlide();
+  else if (movedBy > 100) prevSlide();
+  else goTo(index);
+
+  startAuto();
+});
 
   slider.addEventListener('mouseenter', stopAuto);
   slider.addEventListener('mouseleave', () => {

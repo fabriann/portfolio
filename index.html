@@ -557,6 +557,62 @@
       .hero-stats { gap: 1.5rem; }
       .card-top, .card-bottom { display: none; }
     }
+    /* SLIDER (Project 1 only safe) */
+    .slider { position: relative; overflow: hidden; }
+    
+    .slides {
+      display: flex;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(.22,.61,.36,1);
+    }
+    
+    .slides img {
+      min-width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+    
+    /* arrows */
+    .slide-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.4);
+      border: none;
+      color: white;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 2;
+    }
+    
+    .prev { left: 10px; }
+    .next { right: 10px; }
+    
+    /* dots */
+    .dots {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+    }
+    
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      cursor: pointer;
+    }
+    
+    .dot.active {
+      background: #fff;
+      transform: scale(1.3);
+    }
   </style>
 </head>
 <body>
@@ -746,8 +802,22 @@
   <div class="projects-grid">
 
     <div class="project-card">
-      <div class="project-img">
-        <img src="image3.jpg" alt="Project 1" style="display:block;"/>
+      <div class="project-img slider" data-slider>
+        <div class="slides">
+          <img src="project1/Screenshot_20260405_213827_Instagram.jpg">
+          <img src="project1/Screenshot_20260405_215452_Instagram.jpg">
+          <img src="project1/Screenshot_20260405_215518_Instagram.jpg">
+          <img src="project1/Screenshot_20260405_215536_Instagram.jpg">
+          <img src="project1/Screenshot_20260405_215557_Instagram.jpg">
+          <img src="project1/Screenshot_20260405_215608_Instagram.jpg">
+          <img src="project1/Screenshot_20260405_215652_Instagram.jpg">
+          <img src="project1/Screenshot_20260405_215711_Instagram.jpg">
+        </div>
+      
+        <button class="slide-btn prev">‹</button>
+        <button class="slide-btn next">›</button>
+      
+        <div class="dots"></div>
       </div>
       <div class="project-body">
         <div class="project-tag">Restaurant Concept</div>
@@ -943,4 +1013,93 @@
   <div class="footer-copy">© 2025 · FnB Consultant · All rights reserved</div>
   <div class="footer-links">
     <a href="#hero">Home</a>
-    <a href="#about">A
+    <a href="#about">About</a>
+  </div>
+</footer>
+<script>
+const slider = document.querySelector('[data-slider]');
+if (slider) {
+  const slides = slider.querySelector('.slides');
+  const images = slides.querySelectorAll('img');
+  const prev = slider.querySelector('.prev');
+  const next = slider.querySelector('.next');
+  const dotsContainer = slider.querySelector('.dots');
+
+  let index = 0;
+  let interval;
+  let startX = 0;
+
+  // create dots
+  images.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.classList.add('dot');
+    if (i === 0) dot.classList.add('active');
+    dot.onclick = () => goTo(i);
+    dotsContainer.appendChild(dot);
+  });
+
+  const dots = dotsContainer.querySelectorAll('.dot');
+
+  function updateDots() {
+    dots.forEach(d => d.classList.remove('active'));
+    dots[index].classList.add('active');
+  }
+
+  function goTo(i) {
+    index = (i + images.length) % images.length;
+    slides.style.transform = `translateX(-${index * 100}%)`;
+    updateDots();
+  }
+
+  function nextSlide(){ goTo(index + 1); }
+  function prevSlide(){ goTo(index - 1); }
+
+  function startAuto(){
+    interval = setInterval(nextSlide, 2000);
+  }
+
+  function stopAuto(){
+    clearInterval(interval);
+  }
+
+  next.onclick = () => { nextSlide(); reset(); };
+  prev.onclick = () => { prevSlide(); reset(); };
+
+  function reset(){
+    stopAuto();
+    startAuto();
+  }
+
+  // swipe
+  slides.addEventListener('mousedown', e => {
+    startX = e.clientX;
+    stopAuto();
+  });
+
+  window.addEventListener('mouseup', e => {
+    let diff = e.clientX - startX;
+    if (diff > 50) prevSlide();
+    else if (diff < -50) nextSlide();
+    startAuto();
+  });
+
+  slides.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    stopAuto();
+  });
+
+  slides.addEventListener('touchend', e => {
+    let diff = e.changedTouches[0].clientX - startX;
+    if (diff > 50) prevSlide();
+    else if (diff < -50) nextSlide();
+    startAuto();
+  });
+
+  slider.addEventListener('mouseenter', stopAuto);
+  slider.addEventListener('mouseleave', startAuto);
+
+  startAuto();
+}
+</script>
+
+</body>

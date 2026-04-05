@@ -1016,8 +1016,7 @@
   </div>
 </footer>
 <script>
-const slider = document.querySelector('[data-slider]');
-if (slider) {
+document.querySelectorAll('[data-slider]').forEach(slider => {
   const slides = slider.querySelector('.slides');
   const images = slides.querySelectorAll('img');
   const prev = slider.querySelector('.prev');
@@ -1162,7 +1161,7 @@ slides.addEventListener('touchend', () => {
   });
 
   startAuto();
-}
+});
 </script>
 
 </body>

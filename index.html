@@ -1054,13 +1054,17 @@ if (slider) {
   function nextSlide(){ goTo(index + 1); }
   function prevSlide(){ goTo(index - 1); }
 
-  function startAuto(){
-    interval = setInterval(nextSlide, 2000);
-  }
+function startAuto(){
+  stopAuto(); // IMPORTANT: clear first
+  interval = setInterval(nextSlide, 5000);
+}
 
-  function stopAuto(){
+function stopAuto(){
+  if (interval) {
     clearInterval(interval);
+    interval = null;
   }
+}
 
   next.onclick = () => { nextSlide(); reset(); };
   prev.onclick = () => { prevSlide(); reset(); };
@@ -1096,7 +1100,9 @@ if (slider) {
   });
 
   slider.addEventListener('mouseenter', stopAuto);
-  slider.addEventListener('mouseleave', startAuto);
+  slider.addEventListener('mouseleave', () => {
+    setTimeout(startAuto, 1000);
+  });
 
   startAuto();
 }

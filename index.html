@@ -553,6 +553,8 @@
 <script>
 document.querySelectorAll('[data-slider]').forEach(slider => {
   const slides = slider.querySelector('.slides');
+  slides.style.width = `${images.length * 100}%`;
+  images.forEach(img => img.style.width = `${100 / images.length}%`);
   const images = slides.querySelectorAll('img');
   const prev = slider.querySelector('.prev');
   const next = slider.querySelector('.next');
@@ -574,7 +576,7 @@ document.querySelectorAll('[data-slider]').forEach(slider => {
 
   function goTo(i) {
     index = (i + images.length) % images.length;
-    currentTranslate = -index * slider.offsetWidth;
+    currentTranslate = -index * slideWidth;
     prevTranslate = currentTranslate;
     slides.style.transform = `translateX(${currentTranslate}px)`;
     updateDots();
@@ -611,6 +613,13 @@ document.querySelectorAll('[data-slider]').forEach(slider => {
   slider.addEventListener('mouseleave', () => setTimeout(startAuto, 800));
   startAuto();
 });
+  
+  let slideWidth = slider.offsetWidth;
+
+  window.addEventListener('resize', () => {
+    slideWidth = slider.offsetWidth;
+    goTo(index); // recalc position
+  });
 </script>
 </body>
 </html>
